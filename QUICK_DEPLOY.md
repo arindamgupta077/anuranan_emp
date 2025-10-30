@@ -1,37 +1,21 @@
-# 🚀 Quick Deployment Steps
+# 🚀 Quick Serverless Deployment
 
-## ⚡ Fast Track (10 Minutes)
+## ⚡ Super Fast Track (5 Minutes - No Backend Needed!)
 
-### 1. Deploy Backend First (Render)
+Your application is now **100% serverless**! Frontend connects directly to Supabase.
 
-1. Go to https://render.com/ and sign up with GitHub
-2. Click **"New"** → **"Web Service"**
-3. Select your `anuranan_emp` repository
-4. Configure:
-   - **Name**: `anuranan-backend`
-   - **Root Directory**: `backend`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-   
-5. Add Environment Variables (click "Environment"):
-   ```
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_ANON_KEY=your-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   PORT=4000
-   NODE_ENV=production
-   FRONTEND_URL=https://your-site.netlify.app
-   CRON_SCHEDULE=0 2 * * *
-   RATE_LIMIT_WINDOW_MS=900000
-   RATE_LIMIT_MAX_REQUESTS=100
-   ```
+### 1. Setup Database Function (One-time)
 
-6. Click **"Create Web Service"**
-7. Wait 2-5 minutes, then copy your backend URL (e.g., `https://anuranan-backend.onrender.com`)
+1. Go to https://supabase.com/dashboard
+2. Select your project
+3. Go to **SQL Editor**
+4. Copy and paste the contents of `database/recurring-tasks-trigger.sql`
+5. Click **"Run"**
+6. Done! ✅
 
 ---
 
-### 2. Deploy Frontend (Netlify)
+### 2. Deploy to Netlify
 
 1. Go to https://app.netlify.com/ and sign up
 2. Click **"Add new site"** → **"Import an existing project"**
@@ -39,30 +23,36 @@
 4. Configure:
    - **Base directory**: `frontend`
    - **Build command**: `npm run build`
-   - **Publish directory**: `frontend/.next`
+   - **Publish directory**: `.next`
 
-5. Add Environment Variables:
+5. Add Environment Variables (Only 2 needed now!):
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   NEXT_PUBLIC_API_URL=https://anuranan-backend.onrender.com
-   NEXT_PUBLIC_APP_NAME=Anuranan Employee Portal
-   NEXT_PUBLIC_APP_URL=https://your-site.netlify.app
    ```
 
 6. Click **"Deploy site"**
 7. Wait 2-5 minutes for build to complete
-8. Copy your Netlify URL (e.g., `https://anuranan-portal.netlify.app`)
+8. Your site is LIVE! 🎉
 
 ---
 
-### 3. Update Backend CORS
+### 3. Setup Recurring Tasks (Optional)
 
-1. Go back to Render dashboard
-2. Click on your backend service
-3. Go to **Environment** tab
-4. Update `FRONTEND_URL` with your actual Netlify URL
-5. Click **"Save Changes"** (will auto-redeploy)
+#### Option A: GitHub Actions (Recommended - FREE)
+
+1. Go to your GitHub repository settings
+2. Go to **Secrets and variables** → **Actions**
+3. Add these secrets:
+   - `SUPABASE_URL`: Your Supabase URL
+   - `SUPABASE_SERVICE_KEY`: Your service role key
+4. The workflow in `.github/workflows/recurring-tasks.yml` will run daily at 2 AM
+
+#### Option B: Manual Trigger
+Run this in Supabase SQL Editor daily:
+```sql
+SELECT create_recurring_tasks();
+```
 
 ---
 

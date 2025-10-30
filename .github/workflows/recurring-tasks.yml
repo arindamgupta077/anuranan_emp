@@ -1,0 +1,30 @@
+name: Daily Recurring Tasks Creation
+
+# Runs daily at 2 AM UTC (adjust timezone as needed)
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Every day at 2:00 AM UTC
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  create_recurring_tasks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create Recurring Tasks via Supabase
+        run: |
+          curl -X POST \
+            '${{ secrets.SUPABASE_URL }}/rest/v1/rpc/create_recurring_tasks' \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Content-Type: application/json"
+        
+      - name: Log Success
+        if: success()
+        run: echo "Recurring tasks created successfully at $(date)"
+        
+      - name: Log Failure
+        if: failure()
+        run: echo "Failed to create recurring tasks at $(date)"

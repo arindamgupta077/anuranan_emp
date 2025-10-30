@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import '@/styles/globals.css';
 
 // App version for cache busting - update this when you deploy
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 
 export default function App({ Component, pageProps }: AppProps) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
