@@ -1,9 +1,31 @@
 import { supabase } from './supabaseClient';
+import { useAuthStore } from '@/store/authStore';
 
 // Helper function to get current user and check if CEO
 async function getCurrentUser() {
   console.log('[API] getCurrentUser called');
   
+  // CRITICAL FIX: Use cached auth data from store to avoid hanging Supabase calls on reload
+  const { user: cachedUser, employee: cachedEmployee, isCEO: cachedIsCEO, isAuthenticated } = useAuthStore.getState();
+  
+  console.log('[API] Checking cached auth:', {
+    hasUser: !!cachedUser,
+    hasEmployee: !!cachedEmployee,
+    isAuthenticated,
+    isCEO: cachedIsCEO
+  });
+  
+  if (isAuthenticated && cachedUser && cachedEmployee) {
+    console.log('[API] ✅ Using cached auth data (avoiding Supabase hang)');
+    return {
+      user: cachedUser,
+      employee: cachedEmployee,
+      isCEO: cachedIsCEO
+    };
+  }
+  
+  // Fallback: If no cached data, fetch from Supabase (only happens on fresh login)
+  console.log('[API] ⚠️ No cached data, fetching from Supabase...');
   const startTime = Date.now();
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
