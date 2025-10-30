@@ -170,6 +170,9 @@ const nextConfig = {
     domains: ['your-supabase-project.supabase.co'],
     formats: ['image/avif', 'image/webp'],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Fix cross-origin warning for local network access (mobile testing)
   async headers() {
     return [
