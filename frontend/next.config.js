@@ -127,6 +127,16 @@ const withPWA = require('next-pwa')({
       }
     },
     {
+      // Exclude version.json from caching - always fetch fresh
+      urlPattern: ({ url }) => {
+        return url.pathname === '/version.json';
+      },
+      handler: 'NetworkOnly',
+      options: {
+        cacheName: 'version-check'
+      }
+    },
+    {
       urlPattern: /\.(?:json|xml|csv)$/i,
       handler: 'NetworkFirst',
       options: {

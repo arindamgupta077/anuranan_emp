@@ -15,9 +15,22 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     let isMounted = true;
 
+    // Run version check in background without blocking the UI
     const initialiseVersion = async () => {
       try {
-        await versionManager.ensureFreshVersion();
+        // Set a short timeout - don't let version check block the app
+        const timeoutPromise = new Promise<void>((resolve) => {
+          setTimeout(() => resolve(), 1000); // Max 1 second wait
+        });
+        
+        const versionCheckPromise = versionManager.ensureFreshVersion().catch((error) => {
+          console.warn('Version check failed:', error);
+        });
+
+        // Wait for whichever completes first
+        await Promise.race([versionCheckPromise, timeoutPromise]);
+      } catch (error) {
+        console.error('Version initialization error:', error);
       } finally {
         if (isMounted) {
           setIsCheckingVersion(false);

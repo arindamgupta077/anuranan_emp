@@ -25,7 +25,7 @@ const STORAGE_KEYS = {
   lastPurge: 'cache_cleared_at',
 };
 
-const FETCH_TIMEOUT_MS = 7000;
+const FETCH_TIMEOUT_MS = 3000; // Reduced to 3 seconds
 
 const isBrowser = () => typeof window !== 'undefined';
 
@@ -160,6 +160,22 @@ const ensureFreshVersion = async (logger?: (message: string) => void): Promise<V
   }
 
   const log = makeLogger(logger);
+  
+  // Skip check if done recently (within last 30 seconds) to prevent rapid repeated checks
+  try {
+    const lastCheck = window.localStorage.getItem(STORAGE_KEYS.lastCheck);
+    if (lastCheck) {
+      const lastCheckTime = new Date(lastCheck).getTime();
+      const now = Date.now();
+      if (now - lastCheckTime < 30000) {
+        log('Version checked recently, skipping');
+        return { updated: false, reason: 'up-to-date' };
+      }
+    }
+  } catch (error) {
+    // Ignore localStorage errors
+  }
+  
   const serverInfo = await fetchServerVersion();
   markLastCheck();
 

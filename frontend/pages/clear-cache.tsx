@@ -24,6 +24,15 @@ export default function ClearCache() {
         addLog(`  - ${cache.name}: ${cache.size} items`);
       });
       addLog('---');
+      
+      // Auto-clear if URL has ?auto=true parameter
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('auto') === 'true') {
+        addLog('Auto-clear mode detected, clearing in 2 seconds...');
+        setTimeout(() => {
+          clearEverything();
+        }, 2000);
+      }
     };
 
     getCacheInfoFirst();
