@@ -83,13 +83,23 @@ export default function Dashboard() {
     
     try {
       setLoadingStats(true);
+      setDebugText('Calling tasks API...');
       
       console.log('[DASHBOARD] Fetching tasks...');
       const tasksStart = Date.now();
-      const tasksRes = await tasksAPI.list({ status: 'OPEN,IN_PROGRESS' }).catch((err) => {
-        console.error('[DASHBOARD] ❌ Tasks API failed:', err);
-        return { data: { tasks: [] } };
-      });
+      
+      // Add timeout wrapper
+      const tasksPromise = tasksAPI.list({ status: 'OPEN,IN_PROGRESS' });
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Tasks API timeout after 10s')), 10000)
+      );
+      
+      const tasksRes = await Promise.race([tasksPromise, timeoutPromise])
+        .catch((err: Error) => {
+          console.error('[DASHBOARD] ❌ Tasks API failed:', err);
+          setDebugText(`Tasks API error: ${err.message}`);
+          return { data: { tasks: [] } };
+        });
       console.log('[DASHBOARD] Tasks fetched:', {
         duration: `${Date.now() - tasksStart}ms`,
         count: tasksRes.data.tasks?.length || 0
