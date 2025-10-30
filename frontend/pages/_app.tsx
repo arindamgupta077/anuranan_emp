@@ -30,7 +30,15 @@ export default function App({ Component, pageProps }: AppProps) {
         return;
       }
 
-      if (showLoader) {
+      const { user: cachedUser, employee: cachedEmployee } = useAuthStore.getState();
+      const hasCachedProfile = cachedUser?.id === session.user.id && !!cachedEmployee;
+      const shouldShowLoader = showLoader && !hasCachedProfile;
+
+      if (hasCachedProfile) {
+        setAuth(session.user, cachedEmployee);
+      }
+
+      if (shouldShowLoader) {
         setLoading(true);
       }
       try {
@@ -50,13 +58,17 @@ export default function App({ Component, pageProps }: AppProps) {
         if (employee && !error) {
           setAuth(session.user, employee);
         } else {
-          clearAuth();
+          if (!hasCachedProfile) {
+            clearAuth();
+          }
         }
       } catch (error) {
         console.error('Session sync error:', error);
-        clearAuth();
+        if (!hasCachedProfile) {
+          clearAuth();
+        }
       } finally {
-        if (showLoader) {
+        if (shouldShowLoader) {
           setLoading(false);
         }
       }
@@ -115,25 +127,36 @@ export default function App({ Component, pageProps }: AppProps) {
 
     const cleanServiceWorkers = async () => {
       try {
+        let didCleanup = false;
         if ('serviceWorker' in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map(reg => reg.unregister()));
+          const results = await Promise.all(registrations.map(reg => reg.unregister()));
+          if (results.some(result => result)) {
+            didCleanup = true;
+          }
         }
 
         if ('caches' in window) {
           const cacheNames = await caches.keys();
+          if (cacheNames.length > 0) {
+            didCleanup = true;
+          }
           await Promise.all(cacheNames.map(name => caches.delete(name)));
         }
 
         if ('sessionStorage' in window) {
           sessionStorage.setItem(flagKey, 'yes');
         }
+
+        if (didCleanup) {
+          window.location.replace(window.location.href);
+        }
       } catch (error) {
         console.warn('Netlify cache cleanup failed:', error);
       }
     };
 
-    cleanServiceWorkers();
+    void cleanServiceWorkers();
   }, []);
 
   // No loading screen - render immediately
