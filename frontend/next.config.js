@@ -161,6 +161,8 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Add trailing slash for better compatibility
+  trailingSlash: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

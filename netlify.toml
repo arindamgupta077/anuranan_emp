@@ -10,6 +10,10 @@
   # Node version
   NODE_VERSION = "18"
 
+# Use Netlify Next.js Plugin for proper routing
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 # Headers for security and caching
 [[headers]]
   for = "/*"
