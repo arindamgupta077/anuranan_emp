@@ -9,6 +9,14 @@ import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import '@/styles/globals.css';
 import type { Session } from '@supabase/supabase-js';
 
+const shouldApplyNetlifyFix = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  const host = window.location.hostname;
+  return host.endsWith('.netlify.app') || host.includes('-netlify.app');
+};
+
 export default function App({ Component, pageProps }: AppProps) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
 
@@ -89,6 +97,44 @@ export default function App({ Component, pageProps }: AppProps) {
       subscription.unsubscribe();
     };
   }, [setAuth, clearAuth, setLoading]);
+
+  useEffect(() => {
+    if (!shouldApplyNetlifyFix()) {
+      return;
+    }
+
+    const flagKey = 'netlify-sw-cleaned';
+    try {
+      const alreadyHandled = sessionStorage.getItem(flagKey);
+      if (alreadyHandled === 'yes') {
+        return;
+      }
+    } catch (error) {
+      // Ignore sessionStorage issues
+    }
+
+    const cleanServiceWorkers = async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(reg => reg.unregister()));
+        }
+
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+
+        if ('sessionStorage' in window) {
+          sessionStorage.setItem(flagKey, 'yes');
+        }
+      } catch (error) {
+        console.warn('Netlify cache cleanup failed:', error);
+      }
+    };
+
+    cleanServiceWorkers();
+  }, []);
 
   // No loading screen - render immediately
   // Version check happens in background and won't block the UI
