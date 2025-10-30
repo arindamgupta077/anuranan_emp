@@ -21,9 +21,24 @@ export default function Dashboard() {
     leaveRequests: 0,
   });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [debugText, setDebugText] = useState<string>('Initializing...');
+
+  // Force immediate log on component render
+  if (typeof window !== 'undefined') {
+    console.log('🔵 [DASHBOARD RENDER]', {
+      isAuthenticated,
+      isLoading,
+      mounted,
+      loadingStats,
+      hasEmployee: !!employee,
+      timestamp: new Date().toISOString()
+    });
+  }
 
   useEffect(() => {
+    console.log('🟢 [DASHBOARD] Component mounted');
     setMounted(true);
+    setDebugText('Component mounted');
   }, []);
 
   useEffect(() => {
@@ -34,22 +49,28 @@ export default function Dashboard() {
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    console.log('[DASHBOARD] Mount/Auth effect triggered', {
+    const state = {
       isAuthenticated,
       mounted,
       isLoading,
       willLoad: isAuthenticated && mounted && !isLoading
-    });
+    };
+    
+    console.log('🟡 [DASHBOARD] Effect triggered:', state);
+    setDebugText(`Effect: auth=${isAuthenticated}, mount=${mounted}, loading=${isLoading}`);
     
     if (isAuthenticated && mounted && !isLoading) {
-      console.log('[DASHBOARD] Conditions met, loading stats...');
+      console.log('✅ [DASHBOARD] ALL CONDITIONS MET - Loading stats...');
+      setDebugText('Loading stats...');
       loadDashboardStats();
     } else {
-      console.log('[DASHBOARD] Conditions not met:', {
-        needsAuth: !isAuthenticated,
-        needsMount: !mounted,
-        stillLoading: isLoading
-      });
+      const missing = [];
+      if (!isAuthenticated) missing.push('auth');
+      if (!mounted) missing.push('mount');
+      if (isLoading) missing.push('still loading');
+      
+      console.log('❌ [DASHBOARD] Conditions NOT met. Missing:', missing.join(', '));
+      setDebugText(`Waiting for: ${missing.join(', ')}`);
     }
   }, [isAuthenticated, mounted, isLoading]);
 
@@ -111,6 +132,8 @@ export default function Dashboard() {
         leaveRequests
       });
 
+      setDebugText(`✅ Stats loaded: ${activeTasks}/${selfTasks}/${leaveRequests}`);
+
       setStats({
         activeTasks,
         selfTasks,
@@ -137,6 +160,28 @@ export default function Dashboard() {
       <Head>
         <title>Dashboard - Anuranan Employee Portal</title>
       </Head>
+
+      {/* DEBUG OVERLAY - Remove after fixing */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: '#000',
+        color: '#0f0',
+        padding: '10px',
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        zIndex: 99999,
+        borderTop: '2px solid #0f0'
+      }}>
+        <strong>DEBUG:</strong> {debugText} | 
+        Auth: {isAuthenticated ? '✅' : '❌'} | 
+        Loading: {isLoading ? '⏳' : '✅'} | 
+        Mounted: {mounted ? '✅' : '❌'} | 
+        LoadingStats: {loadingStats ? '⏳' : '✅'} | 
+        Stats: {stats.activeTasks}/{stats.selfTasks}/{stats.leaveRequests}
+      </div>
 
       <div className="min-h-screen bg-gray-50">
         {/* Navigation Bar */}
