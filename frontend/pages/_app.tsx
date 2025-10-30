@@ -7,118 +7,80 @@ import { supabase } from '@/lib/supabaseClient';
 import versionManager from '@/lib/versionManager';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import '@/styles/globals.css';
+import type { Session } from '@supabase/supabase-js';
 
 export default function App({ Component, pageProps }: AppProps) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
 
   useEffect(() => {
+    const syncSession = async (session: Session | null, { showLoader = true }: { showLoader?: boolean } = {}) => {
+      if (!session?.user) {
+        clearAuth();
+        if (showLoader) {
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (showLoader) {
+        setLoading(true);
+      }
+      try {
+        const { data: employee, error } = await supabase
+          .from('employees')
+          .select(`
+            *,
+            roles (
+              id,
+              name
+            )
+          `)
+          .eq('auth_user_id', session.user.id)
+          .eq('active', true)
+          .single();
+
+        if (employee && !error) {
+          setAuth(session.user, employee);
+        } else {
+          clearAuth();
+        }
+      } catch (error) {
+        console.error('Session sync error:', error);
+        clearAuth();
+      } finally {
+        if (showLoader) {
+          setLoading(false);
+        }
+      }
+    };
 
     // Run version check in background without blocking the UI
     versionManager.ensureFreshVersion().catch((error) => {
       console.warn('Background version check failed:', error);
     });
 
-    const cleanupLegacyPWA = async () => {
-      if (typeof window === 'undefined') {
-        return;
-      }
-
-      try {
-        const cleanupKey = 'legacy_pwa_cleanup_v1';
-        if (window.localStorage.getItem(cleanupKey) === 'done') {
-          return;
-        }
-
-        let changesMade = false;
-
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          if (registrations.length > 0) {
-            await Promise.all(registrations.map((registration) => registration.unregister()));
-            changesMade = true;
-          }
-        }
-
-        if ('caches' in window) {
-          const cacheNames = await window.caches.keys();
-          if (cacheNames.length > 0) {
-            await Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)));
-            changesMade = true;
-          }
-        }
-
-        if (changesMade) {
-          window.localStorage.setItem(cleanupKey, 'done');
-          console.info('[app] Removed legacy PWA caches and service workers');
-        }
-      } catch (error) {
-        console.warn('Legacy PWA cleanup failed:', error);
-      }
-    };
-
-    cleanupLegacyPWA();
-
-    // Check active session
-    const checkSession = async () => {
-      setLoading(true);
+    const initialiseAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          // Fetch employee data
-          const { data: employee, error } = await supabase
-            .from('employees')
-            .select(`
-              *,
-              roles (
-                id,
-                name
-              )
-            `)
-            .eq('auth_user_id', session.user.id)
-            .eq('active', true)
-            .single();
-
-          if (employee && !error) {
-            setAuth(session.user, employee);
-          } else {
-            clearAuth();
-          }
-        } else {
-          clearAuth();
-        }
+        await syncSession(session);
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('Initial session check error:', error);
         clearAuth();
-      } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    initialiseAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const { data: employee } = await supabase
-            .from('employees')
-            .select(`
-              *,
-              roles (
-                id,
-                name
-              )
-            `)
-            .eq('auth_user_id', session.user.id)
-            .eq('active', true)
-            .single();
-
-          if (employee) {
-            setAuth(session.user, employee);
-          }
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          await syncSession(session, { showLoader: true });
+        } else if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          await syncSession(session, { showLoader: false });
         } else if (event === 'SIGNED_OUT') {
           clearAuth();
+          setLoading(false);
         }
       }
     );

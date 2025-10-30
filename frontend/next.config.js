@@ -3,8 +3,8 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  // Disable the service worker in production for now to avoid stale-cache issues on Netlify
-  disable: true,
+  // Disable in dev to avoid regeneration warnings, enable for testing
+  disable: false, // PWA enabled for testing, // Disable PWA in development
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
   scope: '/',
   reloadOnOnline: true,
