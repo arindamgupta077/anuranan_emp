@@ -152,7 +152,10 @@ const withPWA = require('next-pwa')({
         const isSameOrigin = self.origin === url.origin;
         if (!isSameOrigin) return false;
         const pathname = url.pathname;
+        // Don't cache API routes
         if (pathname.startsWith('/api/')) return false;
+        // Don't cache HTML pages - always fetch fresh for auth
+        if (!pathname.includes('.') || pathname.endsWith('/')) return false;
         return true;
       },
       handler: 'NetworkFirst',
@@ -163,6 +166,23 @@ const withPWA = require('next-pwa')({
           maxAgeSeconds: 24 * 60 * 60 // 24 hours
         },
         networkTimeoutSeconds: 10
+      }
+    },
+    {
+      // HTML pages - always fetch fresh (no caching for auth-protected pages)
+      urlPattern: ({ url, request }) => {
+        const isSameOrigin = self.origin === url.origin;
+        if (!isSameOrigin) return false;
+        const pathname = url.pathname;
+        // Match HTML pages (pages without extension or with trailing slash)
+        if (!pathname.includes('.') || pathname.endsWith('/')) {
+          return request.destination === 'document';
+        }
+        return false;
+      },
+      handler: 'NetworkOnly',
+      options: {
+        cacheName: 'html-pages'
       }
     }
   ]

@@ -99,61 +99,9 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, [setAuth, clearAuth, setLoading]);
 
-  useEffect(() => {
-    if (!shouldApplyNetlifyFix()) {
-      return;
-    }
-
-    const flagKey = 'netlify-sw-cleaned-v2';
-    try {
-      const alreadyHandled = localStorage.getItem(flagKey);
-      if (alreadyHandled === 'yes') {
-        return;
-      }
-    } catch (error) {
-      // Ignore storage issues
-      return;
-    }
-
-    const cleanServiceWorkers = async () => {
-      try {
-        // Set flag BEFORE cleanup to prevent reload loops
-        localStorage.setItem(flagKey, 'yes');
-
-        let didCleanup = false;
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          const results = await Promise.all(registrations.map(reg => reg.unregister()));
-          if (results.some(result => result)) {
-            didCleanup = true;
-          }
-        }
-
-        if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          if (cacheNames.length > 0) {
-            didCleanup = true;
-          }
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-        }
-
-        // Only reload if we actually cleaned something
-        if (didCleanup) {
-          window.location.replace(window.location.href);
-        }
-      } catch (error) {
-        console.warn('Netlify cache cleanup failed:', error);
-        // Clear flag on error so user can try again
-        try {
-          localStorage.removeItem(flagKey);
-        } catch (e) {
-          // Ignore
-        }
-      }
-    };
-
-    void cleanServiceWorkers();
-  }, []);
+  // Netlify-specific cleanup disabled - was causing reload loops
+  // Service worker and cache issues should be handled by proper Next.js PWA configuration
+  // Users can manually clear cache via browser if needed
 
   // No loading screen - render immediately
   // Version check happens in background and won't block the UI
