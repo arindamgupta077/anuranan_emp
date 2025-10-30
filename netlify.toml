@@ -9,6 +9,8 @@
 [build.environment]
   # Node version
   NODE_VERSION = "18"
+  # Disable Netlify's automatic Next.js detection to use plugin
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # Use Netlify Next.js Plugin for proper routing
 [[plugins]]

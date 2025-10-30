@@ -191,8 +191,9 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Add trailing slash for better compatibility
+  // Netlify compatibility settings - remove standalone mode for proper client-side data loading
   trailingSlash: true,
+  // Remove output: 'standalone' as it breaks client-side data fetching on Netlify
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

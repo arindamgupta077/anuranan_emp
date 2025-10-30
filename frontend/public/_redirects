@@ -1,0 +1,9 @@
+# Netlify redirects for Next.js routing
+# This file is handled by @netlify/plugin-nextjs
+# The plugin automatically creates the correct redirects for Next.js pages
+
+# If you have a separate backend API, uncomment and configure:
+# /api/*  https://your-backend-api.onrender.com/api/:splat  200
+
+# The @netlify/plugin-nextjs handles all routing automatically
+# DO NOT add catch-all redirects here as they break Next.js SSR/SSG
