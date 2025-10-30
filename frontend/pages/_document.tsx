@@ -4,6 +4,11 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Cache Control - Force fresh content on every load */}
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        
         {/* PWA Meta Tags */}
         <meta name="application-name" content="Anuranan Employee Portal" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
