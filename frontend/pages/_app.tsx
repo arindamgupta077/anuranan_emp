@@ -12,13 +12,51 @@ export default function App({ Component, pageProps }: AppProps) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
 
   useEffect(() => {
-    let isMounted = true;
 
     // Run version check in background without blocking the UI
-    // This won't prevent the app from rendering
     versionManager.ensureFreshVersion().catch((error) => {
       console.warn('Background version check failed:', error);
     });
+
+    const cleanupLegacyPWA = async () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      try {
+        const cleanupKey = 'legacy_pwa_cleanup_v1';
+        if (window.localStorage.getItem(cleanupKey) === 'done') {
+          return;
+        }
+
+        let changesMade = false;
+
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          if (registrations.length > 0) {
+            await Promise.all(registrations.map((registration) => registration.unregister()));
+            changesMade = true;
+          }
+        }
+
+        if ('caches' in window) {
+          const cacheNames = await window.caches.keys();
+          if (cacheNames.length > 0) {
+            await Promise.all(cacheNames.map((cacheName) => window.caches.delete(cacheName)));
+            changesMade = true;
+          }
+        }
+
+        if (changesMade) {
+          window.localStorage.setItem(cleanupKey, 'done');
+          console.info('[app] Removed legacy PWA caches and service workers');
+        }
+      } catch (error) {
+        console.warn('Legacy PWA cleanup failed:', error);
+      }
+    };
+
+    cleanupLegacyPWA();
 
     // Check active session
     const checkSession = async () => {
@@ -86,7 +124,6 @@ export default function App({ Component, pageProps }: AppProps) {
     );
 
     return () => {
-      isMounted = false;
       subscription.unsubscribe();
     };
   }, [setAuth, clearAuth, setLoading]);
