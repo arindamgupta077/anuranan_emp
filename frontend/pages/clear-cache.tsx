@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import Head from 'next/head';
-import cacheManager from '../lib/cacheManager';
+import cacheManager from '@/lib/cacheManager';
 
 export default function ClearCache() {
-  const router = useRouter();
   const [status, setStatus] = useState('Clearing cache and service workers...');
   const [logs, setLogs] = useState<string[]>([]);
   const [cacheInfo, setCacheInfo] = useState<{ name: string; size: number }[]>([]);
@@ -35,47 +33,27 @@ export default function ClearCache() {
     try {
       setLogs([]);
       setStatus('Clearing cache and service workers...');
+      const result = await cacheManager.clearAllCaches({ logger: addLog });
 
-      // Unregister all service workers
-      if ('serviceWorker' in navigator) {
-        addLog('Finding service workers...');
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        addLog(`Found ${registrations.length} service worker(s)`);
-        
-        for (const registration of registrations) {
-          addLog(`Unregistering service worker: ${registration.scope}`);
-          await registration.unregister();
-        }
-        addLog('All service workers unregistered');
+      if (result.preservedAuthKeys.length === 0) {
+        addLog('No auth keys detected for preservation');
+      } else {
+        addLog(`Preserved auth keys: ${result.preservedAuthKeys.join(', ')}`);
       }
 
-      // Clear all caches
-      if ('caches' in window) {
-        addLog('Finding caches...');
-        const cacheNames = await caches.keys();
-        addLog(`Found ${cacheNames.length} cache(s): ${cacheNames.join(', ')}`);
-        
-        for (const cacheName of cacheNames) {
-          addLog(`Deleting cache: ${cacheName}`);
-          await caches.delete(cacheName);
-        }
-        addLog('All caches cleared');
+      if (result.removedCaches.length === 0) {
+        addLog('No caches were registered');
+      } else {
+        addLog(`Removed caches: ${result.removedCaches.join(', ')}`);
       }
 
-      // Clear local storage (preserve auth)
-      addLog('Clearing localStorage (preserving auth)...');
-      const authData = localStorage.getItem('supabase.auth.token');
-      localStorage.clear();
-      if (authData) {
-        localStorage.setItem('supabase.auth.token', authData);
-        addLog('Auth data preserved');
+      if (result.unregisteredWorkers.length === 0) {
+        addLog('No active service workers found');
+      } else {
+        addLog(`Unregistered service workers: ${result.unregisteredWorkers.join(', ')}`);
       }
-      addLog('localStorage cleared');
 
-      // Clear session storage
-      addLog('Clearing sessionStorage...');
-      sessionStorage.clear();
-      addLog('sessionStorage cleared');
+      setCacheInfo([]);
 
       setStatus('✅ Successfully cleared all cache and service workers!');
       addLog('');
@@ -86,7 +64,8 @@ export default function ClearCache() {
       }, 3000);
     } catch (error) {
       setStatus('❌ Error clearing cache');
-      addLog(`Error: ${error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      addLog(`Error: ${message}`);
     }
   };
 

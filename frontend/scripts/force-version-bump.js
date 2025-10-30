@@ -12,11 +12,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const versionPath = path.join(__dirname, '../version.json');
+const publicVersionPath = path.join(__dirname, '../public/version.json');
+const repoVersionPath = path.join(__dirname, '../version.json');
+const versionSourcePath = fs.existsSync(publicVersionPath) ? publicVersionPath : repoVersionPath;
 
 try {
   // Read current version
-  const versionData = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+  const versionData = JSON.parse(fs.readFileSync(versionSourcePath, 'utf8'));
   
   console.log('Current version:', versionData);
   
@@ -33,13 +35,17 @@ try {
   };
   
   // Write new version
-  fs.writeFileSync(versionPath, JSON.stringify(newVersionData, null, 2) + '\n');
+  fs.writeFileSync(publicVersionPath, JSON.stringify(newVersionData, null, 2) + '\n');
+
+  if (fs.existsSync(repoVersionPath)) {
+    fs.writeFileSync(repoVersionPath, JSON.stringify(newVersionData, null, 2) + '\n');
+  }
   
   console.log('✅ Version bumped to:', newVersion);
   console.log('📅 Build date:', newVersionData.buildDate);
   console.log('');
   console.log('🔄 This will force all users to clear their cache on next visit.');
-  console.log('💾 Version file updated at:', versionPath);
+  console.log('💾 Version file updated at:', publicVersionPath);
   
 } catch (error) {
   console.error('❌ Error bumping version:', error.message);

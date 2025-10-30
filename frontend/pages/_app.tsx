@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabaseClient';
+import versionManager from '@/lib/versionManager';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import '@/styles/globals.css';
 
@@ -12,96 +13,19 @@ export default function App({ Component, pageProps }: AppProps) {
   const [isCheckingVersion, setIsCheckingVersion] = useState(true);
 
   useEffect(() => {
-    // Aggressive cache busting and version checking
-    const checkAndUpdateVersion = async () => {
+    let isMounted = true;
+
+    const initialiseVersion = async () => {
       try {
-        // Fetch version.json with cache-busting query parameter
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/version.json?t=${timestamp}`, {
-          cache: 'no-cache',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (response.ok) {
-          const serverVersion = await response.json();
-          const storedVersion = localStorage.getItem('app_version');
-          const storedBuildDate = localStorage.getItem('app_build_date');
-          
-          console.log('Version check:', {
-            server: serverVersion.version,
-            stored: storedVersion,
-            serverBuildDate: serverVersion.buildDate,
-            storedBuildDate: storedBuildDate
-          });
-          
-          // Check if version changed or build date is newer
-          if (!storedVersion || 
-              storedVersion !== serverVersion.version || 
-              storedBuildDate !== serverVersion.buildDate) {
-            
-            console.log('🔄 New version detected! Clearing cache...');
-            
-            // Save Supabase auth data before clearing
-            const authKeys = Object.keys(localStorage).filter(key => 
-              key.startsWith('supabase.auth') || key.startsWith('sb-')
-            );
-            const authData: Record<string, string> = {};
-            authKeys.forEach(key => {
-              const value = localStorage.getItem(key);
-              if (value) authData[key] = value;
-            });
-            
-            // Clear all localStorage
-            localStorage.clear();
-            
-            // Restore auth data
-            Object.entries(authData).forEach(([key, value]) => {
-              localStorage.setItem(key, value);
-            });
-            
-            // Store new version info
-            localStorage.setItem('app_version', serverVersion.version);
-            localStorage.setItem('app_build_date', serverVersion.buildDate);
-            localStorage.setItem('cache_cleared_at', new Date().toISOString());
-            
-            // Clear all service worker caches
-            if ('serviceWorker' in navigator) {
-              // Unregister service workers
-              const registrations = await navigator.serviceWorker.getRegistrations();
-              for (const registration of registrations) {
-                await registration.unregister();
-              }
-              
-              // Clear all caches
-              if ('caches' in window) {
-                const cacheNames = await caches.keys();
-                await Promise.all(
-                  cacheNames.map(cacheName => {
-                    console.log('Deleting cache:', cacheName);
-                    return caches.delete(cacheName);
-                  })
-                );
-              }
-            }
-            
-            console.log('✅ Cache cleared! Reloading...');
-            
-            // Hard reload from server (bypasses all caches)
-            window.location.reload();
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Error checking version:', error);
+        await versionManager.ensureFreshVersion();
       } finally {
-        setIsCheckingVersion(false);
+        if (isMounted) {
+          setIsCheckingVersion(false);
+        }
       }
     };
 
-    checkAndUpdateVersion();
+    initialiseVersion();
 
     // Check active session
     const checkSession = async () => {
@@ -169,6 +93,7 @@ export default function App({ Component, pageProps }: AppProps) {
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [setAuth, clearAuth, setLoading]);
