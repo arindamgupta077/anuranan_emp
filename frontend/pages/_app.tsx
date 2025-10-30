@@ -1,6 +1,6 @@
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabaseClient';
@@ -10,35 +10,15 @@ import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   const { setAuth, clearAuth, setLoading } = useAuthStore();
-  const [isCheckingVersion, setIsCheckingVersion] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
     // Run version check in background without blocking the UI
-    const initialiseVersion = async () => {
-      try {
-        // Set a short timeout - don't let version check block the app
-        const timeoutPromise = new Promise<void>((resolve) => {
-          setTimeout(() => resolve(), 1000); // Max 1 second wait
-        });
-        
-        const versionCheckPromise = versionManager.ensureFreshVersion().catch((error) => {
-          console.warn('Version check failed:', error);
-        });
-
-        // Wait for whichever completes first
-        await Promise.race([versionCheckPromise, timeoutPromise]);
-      } catch (error) {
-        console.error('Version initialization error:', error);
-      } finally {
-        if (isMounted) {
-          setIsCheckingVersion(false);
-        }
-      }
-    };
-
-    initialiseVersion();
+    // This won't prevent the app from rendering
+    versionManager.ensureFreshVersion().catch((error) => {
+      console.warn('Background version check failed:', error);
+    });
 
     // Check active session
     const checkSession = async () => {
@@ -111,18 +91,9 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, [setAuth, clearAuth, setLoading]);
 
-  // Show loading screen while checking version
-  if (isCheckingVersion) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="loading-spinner mb-4"></div>
-          <p className="text-gray-600">Checking for updates...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // No loading screen - render immediately
+  // Version check happens in background and won't block the UI
+  
   return (
     <>
       <Head>
