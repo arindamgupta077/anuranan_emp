@@ -30,17 +30,10 @@ export default function App({ Component, pageProps }: AppProps) {
         return;
       }
 
-      const { user: cachedUser, employee: cachedEmployee } = useAuthStore.getState();
-      const hasCachedProfile = cachedUser?.id === session.user.id && !!cachedEmployee;
-      const shouldShowLoader = showLoader && !hasCachedProfile;
-
-      if (hasCachedProfile) {
-        setAuth(session.user, cachedEmployee);
-      }
-
-      if (shouldShowLoader) {
+      if (showLoader) {
         setLoading(true);
       }
+      
       try {
         const { data: employee, error } = await supabase
           .from('employees')
@@ -58,17 +51,13 @@ export default function App({ Component, pageProps }: AppProps) {
         if (employee && !error) {
           setAuth(session.user, employee);
         } else {
-          if (!hasCachedProfile) {
-            clearAuth();
-          }
+          clearAuth();
         }
       } catch (error) {
         console.error('Session sync error:', error);
-        if (!hasCachedProfile) {
-          clearAuth();
-        }
+        clearAuth();
       } finally {
-        if (shouldShowLoader) {
+        if (showLoader) {
           setLoading(false);
         }
       }
@@ -115,18 +104,22 @@ export default function App({ Component, pageProps }: AppProps) {
       return;
     }
 
-    const flagKey = 'netlify-sw-cleaned';
+    const flagKey = 'netlify-sw-cleaned-v2';
     try {
-      const alreadyHandled = sessionStorage.getItem(flagKey);
+      const alreadyHandled = localStorage.getItem(flagKey);
       if (alreadyHandled === 'yes') {
         return;
       }
     } catch (error) {
-      // Ignore sessionStorage issues
+      // Ignore storage issues
+      return;
     }
 
     const cleanServiceWorkers = async () => {
       try {
+        // Set flag BEFORE cleanup to prevent reload loops
+        localStorage.setItem(flagKey, 'yes');
+
         let didCleanup = false;
         if ('serviceWorker' in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations();
@@ -144,15 +137,18 @@ export default function App({ Component, pageProps }: AppProps) {
           await Promise.all(cacheNames.map(name => caches.delete(name)));
         }
 
-        if ('sessionStorage' in window) {
-          sessionStorage.setItem(flagKey, 'yes');
-        }
-
+        // Only reload if we actually cleaned something
         if (didCleanup) {
           window.location.replace(window.location.href);
         }
       } catch (error) {
         console.warn('Netlify cache cleanup failed:', error);
+        // Clear flag on error so user can try again
+        try {
+          localStorage.removeItem(flagKey);
+        } catch (e) {
+          // Ignore
+        }
       }
     };
 
