@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuthStore } from '../store/authStore';
 import Head from 'next/head';
 import { leavesAPI } from '../lib/api';
+import Navbar from '../components/Navbar';
 
 interface Leave {
   id: number;
@@ -220,27 +221,12 @@ export default function LeavesPage() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {isCEO ? 'All Leave Requests' : 'My Leave Requests'}
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  {isCEO ? 'View all employee leave applications' : 'Manage your leave applications'}
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="btn btn-secondary text-sm whitespace-nowrap"
-              >
-                ← Back
-              </button>
-            </div>
-          </div>
-        </header>
+        {/* Navigation Bar */}
+        <Navbar 
+          title={isCEO ? 'All Leave Requests' : 'My Leave Requests'}
+          subtitle={isCEO ? 'View all employee leave applications' : 'Manage your leave applications'}
+          currentPage="leaves"
+        />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

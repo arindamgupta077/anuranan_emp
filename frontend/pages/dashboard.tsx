@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuthStore } from '../store/authStore';
 import Head from 'next/head';
 import { tasksAPI, selfTasksAPI, leavesAPI } from '../lib/api';
+import Navbar from '../components/Navbar';
 
 interface DashboardStats {
   activeTasks: number;
@@ -69,13 +70,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    const { supabase } = await import('../lib/supabaseClient');
-    await supabase.auth.signOut();
-    clearAuth();
-    router.push('/login');
-  };
-
   if (!mounted || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -91,39 +85,8 @@ export default function Dashboard() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 truncate">
-                  Anuranan Employee Portal
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">
-                  Welcome, {employee?.full_name}
-                  {isCEO && <span className="ml-2 badge badge-primary text-xs">CEO</span>}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 self-end sm:self-auto w-full sm:w-auto">
-                {isCEO && (
-                  <button
-                    onClick={() => router.push('/admin')}
-                    className="btn btn-primary text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
-                  >
-                    <span className="hidden sm:inline">⚙️ Admin Panel</span>
-                    <span className="sm:hidden">⚙️ Admin</span>
-                  </button>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-secondary text-xs sm:text-sm px-3 py-2 flex-1 sm:flex-none"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Navigation Bar */}
+        <Navbar currentPage="dashboard" />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -289,33 +252,6 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Role Info */}
-          <div className="mt-4 sm:mt-6 lg:mt-8 card mb-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
-              Your Profile
-            </h3>
-            <dl className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs sm:text-sm font-medium text-gray-500">Name</dt>
-                <dd className="mt-1 text-sm sm:text-base text-gray-900 break-words">{employee?.full_name}</dd>
-              </div>
-              <div>
-                <dt className="text-xs sm:text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm sm:text-base text-gray-900 break-all">{employee?.email}</dd>
-              </div>
-              <div>
-                <dt className="text-xs sm:text-sm font-medium text-gray-500">Role</dt>
-                <dd className="mt-1 text-sm sm:text-base text-gray-900">{employee?.roles?.name || 'N/A'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs sm:text-sm font-medium text-gray-500">Status</dt>
-                <dd className="mt-1">
-                  <span className="badge badge-success text-xs">Active</span>
-                </dd>
-              </div>
-            </dl>
           </div>
         </main>
       </div>

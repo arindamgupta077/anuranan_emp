@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import Head from 'next/head';
 import { tasksAPI, adminAPI } from '../lib/api';
 import toast from 'react-hot-toast';
+import Navbar from '../components/Navbar';
 
 interface Task {
   id: number;
@@ -201,40 +202,27 @@ export default function TasksPage() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {isCEO ? 'All Employee Tasks' : 'My Assigned Tasks'}
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  {isCEO ? 'View and manage tasks assigned to all employees' : 'View and update your assigned tasks only'}
-                </p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {isCEO && (
-                  <button
-                    onClick={openAssignModal}
-                    className="btn btn-primary text-sm whitespace-nowrap flex-1 sm:flex-none"
-                  >
-                    + Assign Task
-                  </button>
-                )}
-                <button
-                  onClick={() => router.push('/dashboard')}
-                  className="btn btn-secondary text-sm whitespace-nowrap flex-1 sm:flex-none"
-                >
-                  ← Back
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Navigation Bar */}
+        <Navbar 
+          title={isCEO ? 'All Employee Tasks' : 'My Assigned Tasks'}
+          subtitle={isCEO ? 'View and manage tasks assigned to all employees' : 'View and update your assigned tasks only'}
+          currentPage="tasks"
+        />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* CEO Quick Actions */}
+          {isCEO && (
+            <div className="mb-6 flex justify-end">
+              <button
+                onClick={openAssignModal}
+                className="btn btn-primary text-sm"
+              >
+                + Assign New Task
+              </button>
+            </div>
+          )}
+
           {/* Info Banner for Non-CEO Users */}
           {!isCEO && (
             <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">

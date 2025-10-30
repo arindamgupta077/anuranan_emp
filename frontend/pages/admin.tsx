@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import Head from 'next/head';
 import { adminAPI, tasksAPI } from '../lib/api';
 import toast from 'react-hot-toast';
+import Navbar from '../components/Navbar';
 
 interface Employee {
   id: string;
@@ -252,25 +253,12 @@ export default function AdminPage() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Admin Panel</h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  Manage employees and system settings
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="btn btn-secondary text-xs sm:text-sm px-3 py-2 self-end sm:self-auto"
-              >
-                ← Back
-              </button>
-            </div>
-          </div>
-        </header>
+        {/* Navigation Bar */}
+        <Navbar 
+          title="Admin Panel"
+          subtitle="Manage employees and system settings"
+          currentPage="admin"
+        />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">

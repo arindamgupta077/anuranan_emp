@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import Head from 'next/head';
 import { selfTasksAPI, adminAPI } from '../lib/api';
 import toast from 'react-hot-toast';
+import Navbar from '../components/Navbar';
 
 interface SelfTask {
   id: number;
@@ -190,38 +191,25 @@ export default function SelfTasksPage() {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {isCEO ? 'All Employee Self Tasks' : 'My Self Tasks'}
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  {isCEO ? 'View self-tasks logged by all employees' : 'Log and track your daily activities'}
-                </p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => setShowForm(!showForm)}
-                  className="btn btn-primary text-sm whitespace-nowrap flex-1 sm:flex-none"
-                >
-                  {showForm ? 'Cancel' : '+ Log Task'}
-                </button>
-                <button
-                  onClick={() => router.push('/dashboard')}
-                  className="btn btn-secondary text-sm whitespace-nowrap flex-1 sm:flex-none"
-                >
-                  ← Back
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Navigation Bar */}
+        <Navbar 
+          title={isCEO ? 'All Employee Self Tasks' : 'My Self Tasks'}
+          subtitle={isCEO ? 'View self-tasks logged by all employees' : 'Log and track your daily activities'}
+          currentPage="self-tasks"
+        />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Quick Action Button */}
+          <div className="mb-6 flex justify-end">
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="btn btn-primary text-sm"
+            >
+              {showForm ? 'Cancel' : '+ Log New Task'}
+            </button>
+          </div>
+
           {/* Info Banner for Non-CEO Users */}
           {!isCEO && (
             <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
