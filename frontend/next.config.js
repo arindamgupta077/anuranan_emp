@@ -1,17 +1,17 @@
 /** @type {import('next').NextConfig} */
 const withPWA = require('next-pwa')({
   dest: 'public',
-  register: true,
-  skipWaiting: true,
-  // Disable in dev to avoid regeneration warnings, enable for testing
-  disable: false, // PWA enabled for testing, // Disable PWA in development
+  register: false,  // DISABLE service worker registration
+  skipWaiting: false,
+  // Disable PWA completely - it's causing issues on Netlify reload
+  disable: process.env.NODE_ENV === 'production', // DISABLE IN PRODUCTION
   buildExcludes: [/middleware-manifest\.json$/, /build-manifest\.json$/],
   scope: '/',
   reloadOnOnline: true,
   fallbacks: {
     document: '/offline',
   },
-  cacheOnFrontEndNav: true,
+  cacheOnFrontEndNav: false,  // Disable cache on navigation
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
   runtimeCaching: [
     {
