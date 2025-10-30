@@ -576,26 +576,66 @@ npm start
 
 ## 🚢 Deployment
 
-### Deploying Backend (Heroku, Railway, Render)
+### 🚀 Quick Deploy to Production
 
-1. Push code to Git repository
-2. Connect to hosting platform
-3. Set environment variables
-4. Deploy
+**Two deployment guides available:**
 
-**Example - Heroku:**
-```powershell
-cd backend
-heroku create anuranan-api
-heroku config:set SUPABASE_URL=your-url
-heroku config:set SUPABASE_SERVICE_ROLE_KEY=your-key
-# ... set other vars
-git push heroku main
-```
+1. **[QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Fast track deployment in 10 minutes
+2. **[NETLIFY_DEPLOYMENT_GUIDE.md](./NETLIFY_DEPLOYMENT_GUIDE.md)** - Comprehensive guide with troubleshooting
 
-### Deploying Frontend (Vercel, Netlify)
+### Recommended Deployment Stack
 
-**Vercel (Recommended):**
+**Frontend**: Netlify (Free tier available)
+**Backend**: Render or Railway (Free tier available)
+**Database**: Supabase (Already set up)
+
+### Quick Steps
+
+1. **Deploy Backend First** (Render/Railway)
+   - Create web service from GitHub
+   - Set root directory to `backend`
+   - Add environment variables
+   - Get backend URL
+
+2. **Deploy Frontend** (Netlify)
+   - Import GitHub repository
+   - Set base directory to `frontend`
+   - Add environment variables with backend URL
+   - Deploy
+
+3. **Update CORS**
+   - Update backend `FRONTEND_URL` with Netlify URL
+   - Redeploy backend
+
+### Configuration Files
+
+- `netlify.toml` - Netlify configuration (already created)
+- `frontend/.env.local.example` - Frontend environment template
+- `backend/.env.example` - Backend environment template
+
+For detailed step-by-step instructions, see **[NETLIFY_DEPLOYMENT_GUIDE.md](./NETLIFY_DEPLOYMENT_GUIDE.md)**
+
+---
+
+## 💰 Hosting Costs
+
+**Free Tier (Perfect for MVP):**
+- Netlify: 100GB bandwidth/month (FREE)
+- Render: 750 hours/month (FREE)
+- Supabase: 500MB database (FREE)
+- **Total: $0/month**
+
+**Production (Paid):**
+- Netlify Pro: $19/month
+- Render: $7-25/month
+- Supabase Pro: $25/month
+- **Total: ~$50-70/month**
+
+---
+
+### Legacy Deployment Options
+
+**Vercel:**
 ```powershell
 cd frontend
 npm i -g vercel
