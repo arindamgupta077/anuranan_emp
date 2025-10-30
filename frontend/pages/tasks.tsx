@@ -60,12 +60,21 @@ export default function TasksPage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      console.log('[TASKS] Not authenticated, redirecting to login');
       router.replace('/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (isAuthenticated && mounted) {
+    console.log('[TASKS] Mount/Auth effect triggered', {
+      isAuthenticated,
+      mounted,
+      isLoading,
+      willLoad: isAuthenticated && mounted && !isLoading
+    });
+    
+    if (isAuthenticated && mounted && !isLoading) {
+      console.log('[TASKS] Conditions met, fetching tasks...');
       fetchTasks();
       
       // Check if we should open the assign task modal
@@ -74,21 +83,30 @@ export default function TasksPage() {
         // Remove the query parameter from URL
         router.replace('/tasks', undefined, { shallow: true });
       }
+    } else {
+      console.log('[TASKS] Conditions not met:', {
+        needsAuth: !isAuthenticated,
+        needsMount: !mounted,
+        stillLoading: isLoading
+      });
     }
-  }, [isAuthenticated, mounted, statusFilter, router.query.action]);
+  }, [isAuthenticated, mounted, isLoading, statusFilter, router.query.action]);
 
   const fetchTasks = async () => {
+    console.log('[TASKS] fetchTasks called with filter:', statusFilter);
     try {
       setLoading(true);
       const response = await tasksAPI.list({
         status: statusFilter.join(','),
       });
+      console.log('[TASKS] ✅ Tasks loaded:', response.data.tasks?.length || 0);
       setTasks(response.data.tasks || []);
     } catch (error: any) {
-      console.error('Error fetching tasks:', error);
+      console.error('[TASKS] ❌ Error fetching tasks:', error);
       toast.error('Failed to load tasks');
     } finally {
       setLoading(false);
+      console.log('[TASKS] Loading complete');
     }
   };
 

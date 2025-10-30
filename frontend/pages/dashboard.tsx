@@ -28,15 +28,30 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      console.log('[DASHBOARD] Not authenticated, redirecting to login');
       router.replace('/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (isAuthenticated && mounted) {
+    console.log('[DASHBOARD] Mount/Auth effect triggered', {
+      isAuthenticated,
+      mounted,
+      isLoading,
+      willLoad: isAuthenticated && mounted && !isLoading
+    });
+    
+    if (isAuthenticated && mounted && !isLoading) {
+      console.log('[DASHBOARD] Conditions met, loading stats...');
       loadDashboardStats();
+    } else {
+      console.log('[DASHBOARD] Conditions not met:', {
+        needsAuth: !isAuthenticated,
+        needsMount: !mounted,
+        stillLoading: isLoading
+      });
     }
-  }, [isAuthenticated, mounted]);
+  }, [isAuthenticated, mounted, isLoading]);
 
   const loadDashboardStats = async () => {
     console.log('[DASHBOARD] Loading stats...', {
