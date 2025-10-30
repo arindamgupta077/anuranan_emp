@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Icon Generator - Anuranan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #14b8a6;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .icon-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .icon-card:hover {
+            border-color: #14b8a6;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2);
+        }
+        
+        canvas {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 15px 0;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .icon-label {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 10px;
+        }
+        
+        .icon-size {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: #14b8a6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .instructions {
+            background: #f0fdfa;
+            border-left: 4px solid #14b8a6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .instructions h3 {
+            color: #0d9488;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .instructions code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .success {
+            background: #d1fae5;
+            border-color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .success.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PWA Icon Generator</h1>
+        <p class="subtitle">Generate professional icons for your Anuranan Employee Portal</p>
+        
+        <div class="icon-grid">
+            <div class="icon-card">
+                <div class="icon-label">Small Icon</div>
+                <div class="icon-size">192 × 192 pixels</div>
+                <canvas id="canvas192" width="192" height="192"></canvas>
+                <button onclick="download(192)">📥 Download PNG</button>
+                <button onclick="copyToClipboard(192)" style="background: #6366f1;">📋 Copy Image</button>
+            </div>
+            
+            <div class="icon-card">
+                <div class="icon-label">Large Icon</div>
+                <div class="icon-size">512 × 512 pixels</div>
+                <canvas id="canvas512" width="512" height="512"></canvas>
+                <button onclick="download(512)">📥 Download PNG</button>
+                <button onclick="copyToClipboard(512)" style="background: #6366f1;">📋 Copy Image</button>
+            </div>
+            
+            <div class="icon-card">
+                <div class="icon-label">Apple Touch Icon</div>
+                <div class="icon-size">180 × 180 pixels</div>
+                <canvas id="canvas180" width="180" height="180"></canvas>
+                <button onclick="download(180, 'apple-touch-icon')">📥 Download PNG</button>
+                <button onclick="copyToClipboard(180)" style="background: #6366f1;">📋 Copy Image</button>
+            </div>
+        </div>
+        
+        <div id="successMessage" class="success">
+            ✅ <strong>Downloaded successfully!</strong> Now move the file to <code>public/icons/</code>
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 Installation Instructions</h3>
+            <ol>
+                <li>Click the <strong>"Download PNG"</strong> buttons above to save each icon</li>
+                <li>Move the downloaded files to: <code>frontend/public/icons/</code></li>
+                <li>Update <code>manifest.json</code> to use <code>.png</code> instead of <code>.svg</code></li>
+                <li>Update <code>pages/_document.tsx</code> apple-touch-icon to use <code>.png</code></li>
+                <li>Restart your dev server: <code>npm run dev</code></li>
+                <li>Test on your mobile device!</li>
+            </ol>
+        </div>
+        
+        <div class="instructions" style="border-left-color: #f59e0b; background: #fffbeb;">
+            <h3>🚀 Quick Copy-Paste Fix</h3>
+            <p>After downloading, update your <code>manifest.json</code>:</p>
+            <pre style="background: #1f2937; color: #e5e7eb; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px;"><code>"icons": [
+  {
+    "src": "/icons/icon-192x192.png",
+    "sizes": "192x192",
+    "type": "image/png",
+    "purpose": "any maskable"
+  },
+  {
+    "src": "/icons/icon-512x512.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }
+]</code></pre>
+        </div>
+    </div>
+    
+    <script>
+        function drawIcon(size) {
+            const canvas = document.getElementById('canvas' + size);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const radius = size * 0.18;
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#14b8a6');
+            gradient.addColorStop(1, '#0d9488');
+            
+            // Draw rounded rectangle with gradient
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            
+            // Draw circle background for letter
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw letter "A" with shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.02;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = size * 0.01;
+            
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.45}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('A', size / 2, size / 2 + size * 0.02);
+        }
+        
+        function download(size, filename = null) {
+            const canvas = document.getElementById('canvas' + size);
+            const link = document.createElement('a');
+            link.download = filename || `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.add('show');
+            setTimeout(() => successMsg.classList.remove('show'), 3000);
+        }
+        
+        async function copyToClipboard(size) {
+            const canvas = document.getElementById('canvas' + size);
+            canvas.toBlob(async (blob) => {
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                    alert('✅ Icon copied to clipboard!');
+                } catch (err) {
+                    alert('⚠️ Copy failed. Please use the Download button instead.');
+                }
+            });
+        }
+        
+        // Draw all icons on page load
+        window.addEventListener('load', () => {
+            drawIcon(192);
+            drawIcon(512);
+            drawIcon(180);
+            console.log('✅ Icons generated successfully!');
+            console.log('📥 Click download buttons to save PNG files');
+        });
+    </script>
+</body>
+</html>
