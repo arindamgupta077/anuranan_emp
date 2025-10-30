@@ -1,10 +1,21 @@
 import { supabase } from './supabaseClient';
+import { useAuthStore } from '@/store/authStore';
 
 // Helper function to get current user and check if CEO
 async function getCurrentUser() {
+  const { user: cachedUser, employee: cachedEmployee, isCEO: cachedIsCEO } = useAuthStore.getState();
+
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) {
     throw new Error('Not authenticated');
+  }
+
+  if (cachedUser?.id === session.user.id && cachedEmployee) {
+    return {
+      user: session.user,
+      employee: cachedEmployee,
+      isCEO: cachedIsCEO,
+    };
   }
 
   const { data: employee, error } = await supabase

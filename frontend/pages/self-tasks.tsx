@@ -26,7 +26,7 @@ interface Employee {
 
 export default function SelfTasksPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, employee, isCEO, sessionReady } = useAuthStore();
+  const { isAuthenticated, isLoading, employee, isCEO } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [selfTasks, setSelfTasks] = useState<SelfTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,19 +48,19 @@ export default function SelfTasksPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && sessionReady && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, sessionReady, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (sessionReady && isAuthenticated && mounted) {
+    if (isAuthenticated && mounted) {
       fetchSelfTasks();
       if (isCEO) {
         fetchEmployees();
       }
     }
-  }, [sessionReady, isAuthenticated, mounted, isCEO]);
+  }, [isAuthenticated, mounted, isCEO]);
 
   const fetchSelfTasks = async () => {
     try {
@@ -176,7 +176,7 @@ export default function SelfTasksPage() {
     return true;
   });
 
-  if (!mounted || isLoading || !sessionReady || !isAuthenticated) {
+  if (!mounted || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>

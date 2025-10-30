@@ -5,7 +5,7 @@ import Head from 'next/head';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, employee, isCEO, sessionReady } = useAuthStore();
+  const { isAuthenticated, isLoading, employee, isCEO } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -13,12 +13,12 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && sessionReady && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, sessionReady, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (!mounted || isLoading || !sessionReady || !isAuthenticated) {
+  if (!mounted || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>

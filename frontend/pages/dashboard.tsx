@@ -13,7 +13,7 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, employee, isCEO, clearAuth, sessionReady } = useAuthStore();
+  const { isAuthenticated, isLoading, employee, isCEO, clearAuth } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     activeTasks: 0,
@@ -27,16 +27,16 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && sessionReady && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, sessionReady, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (sessionReady && isAuthenticated && mounted) {
+    if (isAuthenticated && mounted) {
       loadDashboardStats();
     }
-  }, [sessionReady, isAuthenticated, mounted]);
+  }, [isAuthenticated, mounted]);
 
   const loadDashboardStats = async () => {
     try {
@@ -70,7 +70,7 @@ export default function Dashboard() {
     }
   };
 
-  if (!mounted || isLoading || !sessionReady || !isAuthenticated) {
+  if (!mounted || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>

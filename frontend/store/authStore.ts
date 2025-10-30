@@ -22,11 +22,9 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isCEO: boolean;
-  sessionReady: boolean;
   setAuth: (user: User | null, employee: Employee | null) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
-  setSessionReady: (ready: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -37,7 +35,6 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
       isCEO: false,
-      sessionReady: false,
       setAuth: (user, employee) =>
         set({
           user,
@@ -55,7 +52,6 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
         }),
       setLoading: (loading) => set({ isLoading: loading }),
-      setSessionReady: (ready) => set({ sessionReady: ready }),
     }),
     {
       name: 'auth-storage',
@@ -64,7 +60,6 @@ export const useAuthStore = create<AuthState>()(
         employee: state.employee,
         isAuthenticated: state.isAuthenticated,
         isCEO: state.isCEO,
-        // sessionReady intentionally excluded; always recomputed on load
       }),
     }
   )

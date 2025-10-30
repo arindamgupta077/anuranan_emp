@@ -39,7 +39,7 @@ interface Employee {
 
 export default function TasksPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, employee, isCEO, sessionReady } = useAuthStore();
+  const { isAuthenticated, isLoading, employee, isCEO } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,13 +59,13 @@ export default function TasksPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && sessionReady && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, sessionReady, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (sessionReady && isAuthenticated && mounted) {
+    if (isAuthenticated && mounted) {
       fetchTasks();
       
       // Check if we should open the assign task modal
@@ -75,7 +75,7 @@ export default function TasksPage() {
         router.replace('/tasks', undefined, { shallow: true });
       }
     }
-  }, [sessionReady, isAuthenticated, mounted, statusFilter, router.query.action]);
+  }, [isAuthenticated, mounted, statusFilter, router.query.action]);
 
   const fetchTasks = async () => {
     try {
@@ -187,7 +187,7 @@ export default function TasksPage() {
     return new Date(dueDate) < new Date();
   };
 
-  if (!mounted || isLoading || !sessionReady || !isAuthenticated) {
+  if (!mounted || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>
