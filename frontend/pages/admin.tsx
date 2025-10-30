@@ -26,7 +26,7 @@ interface Role {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, isCEO, employee: currentEmployee } = useAuthStore();
+  const { isAuthenticated, isLoading, isCEO, employee: currentEmployee, sessionReady } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'employees' | 'create-task' | 'recurring' | 'reports'>('employees');
   
@@ -62,21 +62,21 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && sessionReady) {
       if (!isAuthenticated) {
         router.replace('/login');
       } else if (!isCEO) {
         router.replace('/dashboard');
       }
     }
-  }, [isAuthenticated, isLoading, isCEO, router]);
+  }, [isAuthenticated, isLoading, isCEO, sessionReady, router]);
   
   useEffect(() => {
-    if (isAuthenticated && mounted && isCEO) {
+    if (sessionReady && isAuthenticated && mounted && isCEO) {
       fetchEmployees();
       fetchRoles();
     }
-  }, [isAuthenticated, mounted, isCEO, activeTab]);
+  }, [sessionReady, isAuthenticated, mounted, isCEO, activeTab]);
   
   const fetchEmployees = async () => {
     try {
@@ -238,7 +238,7 @@ export default function AdminPage() {
     }
   };
 
-  if (!mounted || isLoading || !isAuthenticated || !isCEO) {
+  if (!mounted || isLoading || !sessionReady || !isAuthenticated || !isCEO) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>

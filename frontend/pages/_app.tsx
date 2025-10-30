@@ -18,14 +18,27 @@ const shouldApplyNetlifyFix = () => {
 };
 
 export default function App({ Component, pageProps }: AppProps) {
-  const { setAuth, clearAuth, setLoading } = useAuthStore();
+  const { setAuth, clearAuth, setLoading, setSessionReady } = useAuthStore();
 
   useEffect(() => {
-    const syncSession = async (session: Session | null, { showLoader = true }: { showLoader?: boolean } = {}) => {
+    const syncSession = async (
+      session: Session | null,
+      {
+        showLoader = true,
+        markReady = false,
+      }: { showLoader?: boolean; markReady?: boolean } = {}
+    ) => {
+      if (markReady) {
+        setSessionReady(false);
+      }
+
       if (!session?.user) {
         clearAuth();
         if (showLoader) {
           setLoading(false);
+        }
+        if (markReady) {
+          setSessionReady(true);
         }
         return;
       }
@@ -71,6 +84,9 @@ export default function App({ Component, pageProps }: AppProps) {
         if (shouldShowLoader) {
           setLoading(false);
         }
+        if (markReady) {
+          setSessionReady(true);
+        }
       }
     };
 
@@ -82,11 +98,12 @@ export default function App({ Component, pageProps }: AppProps) {
     const initialiseAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        await syncSession(session);
+        await syncSession(session, { markReady: true });
       } catch (error) {
         console.error('Initial session check error:', error);
         clearAuth();
         setLoading(false);
+        setSessionReady(true);
       }
     };
 
@@ -94,13 +111,19 @@ export default function App({ Component, pageProps }: AppProps) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-          await syncSession(session, { showLoader: true });
+        if (event === 'INITIAL_SESSION') {
+          // Already handled by initialiseAuth
+          return;
+        }
+
+        if (event === 'SIGNED_IN') {
+          await syncSession(session, { showLoader: true, markReady: true });
         } else if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
           await syncSession(session, { showLoader: false });
         } else if (event === 'SIGNED_OUT') {
           clearAuth();
           setLoading(false);
+          setSessionReady(true);
         }
       }
     );
@@ -108,7 +131,7 @@ export default function App({ Component, pageProps }: AppProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setAuth, clearAuth, setLoading]);
+  }, [setAuth, clearAuth, setLoading, setSessionReady]);
 
   useEffect(() => {
     if (!shouldApplyNetlifyFix()) {

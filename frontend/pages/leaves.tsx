@@ -32,7 +32,7 @@ interface Leave {
 
 export default function LeavesPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, employee, isCEO } = useAuthStore();
+  const { isAuthenticated, isLoading, employee, isCEO, sessionReady } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,16 +54,16 @@ export default function LeavesPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && sessionReady && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, sessionReady, router]);
 
   useEffect(() => {
-    if (isAuthenticated && mounted) {
+    if (sessionReady && isAuthenticated && mounted) {
       loadLeaves();
     }
-  }, [isAuthenticated, mounted, startDateFilter, endDateFilter]);
+  }, [sessionReady, isAuthenticated, mounted, startDateFilter, endDateFilter]);
 
   const loadLeaves = async () => {
     try {
@@ -206,7 +206,7 @@ export default function LeavesPage() {
     });
   };
 
-  if (!mounted || isLoading || !isAuthenticated) {
+  if (!mounted || isLoading || !sessionReady || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>
