@@ -51,7 +51,11 @@ export const useAuthStore = create<AuthState>()(
           isCEO: false,
           isLoading: false,
         }),
-      setLoading: (loading) => set({ isLoading: loading }),
+      setLoading: (loading) => {
+        console.log('[STORE] setLoading called with:', loading);
+        set({ isLoading: loading });
+        console.log('[STORE] After set, state:', useAuthStore.getState().isLoading);
+      },
     }),
     {
       name: 'auth-storage',
@@ -60,7 +64,15 @@ export const useAuthStore = create<AuthState>()(
         employee: state.employee,
         isAuthenticated: state.isAuthenticated,
         isCEO: state.isCEO,
+        // Don't persist isLoading - always start fresh
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('[STORE] Rehydration complete, setting isLoading to false');
+        // After hydration, if we have auth data, ensure loading is false
+        if (state && state.isAuthenticated) {
+          state.isLoading = false;
+        }
+      },
     }
   )
 );

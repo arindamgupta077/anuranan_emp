@@ -18,9 +18,23 @@ const shouldApplyNetlifyFix = () => {
 };
 
 export default function App({ Component, pageProps }: AppProps) {
-  const { setAuth, clearAuth, setLoading } = useAuthStore();
+  const { setAuth, clearAuth, setLoading, isLoading, isAuthenticated } = useAuthStore();
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [showDebug, setShowDebug] = useState(false);
+
+  // Force stop loading if authenticated but stuck
+  useEffect(() => {
+    if (isAuthenticated && isLoading) {
+      console.warn('[LOADING FIX] Authenticated but still loading - forcing loading to false after 2 seconds');
+      const timer = setTimeout(() => {
+        if (useAuthStore.getState().isLoading && useAuthStore.getState().isAuthenticated) {
+          console.warn('[LOADING FIX] ⚠️ Forcing isLoading to false');
+          setLoading(false);
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, isLoading, setLoading]);
 
   useEffect(() => {
     const syncSession = async (session: Session | null, { showLoader = true }: { showLoader?: boolean } = {}) => {
@@ -77,6 +91,7 @@ export default function App({ Component, pageProps }: AppProps) {
         if (employee && !error) {
           console.log('[AUTH SYNC] ✅ Setting auth with employee data');
           setAuth(session.user, employee);
+          console.log('[AUTH SYNC] Auth state after setAuth:', useAuthStore.getState());
         } else {
           console.error('[AUTH SYNC] ❌ Failed to get employee, clearing auth', {
             error,
@@ -89,10 +104,17 @@ export default function App({ Component, pageProps }: AppProps) {
         clearAuth();
       } finally {
         if (showLoader) {
-          console.log('[AUTH SYNC] Setting loading state to false');
+          console.log('[AUTH SYNC] About to set loading to false, current state:', {
+            isLoading: useAuthStore.getState().isLoading,
+            isAuthenticated: useAuthStore.getState().isAuthenticated
+          });
           setLoading(false);
+          console.log('[AUTH SYNC] After setLoading(false), state:', {
+            isLoading: useAuthStore.getState().isLoading,
+            isAuthenticated: useAuthStore.getState().isAuthenticated
+          });
         }
-        console.log('[AUTH SYNC] Sync completed');
+        console.log('[AUTH SYNC] Sync completed, final state:', useAuthStore.getState());
       }
     };
 
