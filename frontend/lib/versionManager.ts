@@ -141,15 +141,13 @@ const markLastCheck = () => {
 };
 
 const hasMeaningfulChange = (server: VersionInfo, stored: VersionInfo | null): boolean => {
-  if (!stored || !stored.version) {
+  if (!stored) {
     return false;
   }
 
+  // Only trigger reload if version number changed, not build date
+  // Build date changes on every build but version only changes when bumped
   if (server.version && stored.version && server.version !== stored.version) {
-    return true;
-  }
-
-  if (server.buildDate && stored.buildDate && server.buildDate !== stored.buildDate) {
     return true;
   }
 
@@ -179,6 +177,23 @@ const ensureFreshVersion = async (logger?: (message: string) => void): Promise<V
   }
 
   if (hasMeaningfulChange(serverInfo, storedInfo)) {
+    // Check if we recently cleared the cache to avoid infinite reload loops
+    try {
+      const lastPurge = window.localStorage.getItem(STORAGE_KEYS.lastPurge);
+      if (lastPurge) {
+        const lastPurgeTime = new Date(lastPurge).getTime();
+        const now = Date.now();
+        // If we cleared cache in the last 10 seconds, skip reload to prevent loop
+        if (now - lastPurgeTime < 10000) {
+          log('Recently cleared cache, skipping reload to prevent loop');
+          storeVersionInfo(serverInfo);
+          return { updated: false, reason: 'up-to-date' };
+        }
+      }
+    } catch (error) {
+      log(`Unable to check last purge timestamp: ${(error as Error).message}`);
+    }
+
     log('Detected new app build, clearing caches');
     await cacheManager.clearAllCaches({ logger: message => log(`cache: ${message}`) });
     storeVersionInfo(serverInfo);
