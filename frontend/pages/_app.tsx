@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabaseClient';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -199,13 +200,16 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </Head>
       <Component {...pageProps} />
+      <PWAInstallPrompt />
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
           style: {
             background: '#363636',
             color: '#fff',
+            fontSize: '14px',
+            maxWidth: '90vw',
           },
           success: {
             iconTheme: {

@@ -89,18 +89,17 @@ export default function Dashboard() {
         <Navbar currentPage="dashboard" />
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
           {/* Info Banner for Non-CEO Users */}
           {!isCEO && (
-            <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
-              <span className="text-xl sm:text-2xl">ℹ️</span>
-              <div className="flex-1">
-                <h3 className="text-xs sm:text-sm font-semibold text-blue-900 mb-1">
+            <div className="mb-3 sm:mb-4 lg:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-2.5 sm:p-3 lg:p-4 flex items-start gap-2">
+              <span className="text-lg sm:text-xl flex-shrink-0">ℹ️</span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xs sm:text-sm font-semibold text-blue-900 mb-0.5 sm:mb-1 leading-tight">
                   Your Personal Dashboard
                 </h3>
-                <p className="text-xs sm:text-sm text-blue-700">
-                  This dashboard shows only your personal data. You can view tasks assigned to you, 
-                  self-tasks you've logged, and your leave requests. For privacy, you cannot view other employees' data.
+                <p className="text-xs text-blue-700 leading-tight">
+                  Shows your tasks, self-tasks, and leaves. Other employees' data is private.
                 </p>
               </div>
             </div>
@@ -122,71 +121,71 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
             {/* Stats Cards */}
             <div 
-              className="card cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-primary-600"
+              className="card stat-card cursor-pointer hover:shadow-md active:shadow-lg transition-shadow border-l-4 border-l-primary-600 touch-manipulation"
               onClick={() => router.push('/tasks')}
             >
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight">
                   {isCEO ? 'All Tasks' : 'My Tasks'}
                 </h3>
-                <span className="text-2xl">📋</span>
+                <span className="text-xl sm:text-2xl">📋</span>
               </div>
               {loadingStats ? (
-                <div className="flex items-center justify-start">
+                <div className="flex items-center justify-start my-1">
                   <div className="loading-spinner-small"></div>
                 </div>
               ) : (
-                <p className="text-2xl sm:text-3xl font-bold text-primary-600">{stats.activeTasks}</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary-600 my-0.5">{stats.activeTasks}</p>
               )}
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                {isCEO ? 'Active tasks (all employees)' : 'Active tasks assigned'}
+              <p className="text-xs text-gray-600 mt-0.5 leading-tight">
+                {isCEO ? 'Active tasks (all)' : 'Active assigned'}
               </p>
             </div>
 
             <div 
-              className="card cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-purple-600"
+              className="card stat-card cursor-pointer hover:shadow-md active:shadow-lg transition-shadow border-l-4 border-l-purple-600 touch-manipulation"
               onClick={() => router.push('/self-tasks')}
             >
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight">
                   {isCEO ? 'All Self Tasks' : 'Self Tasks'}
                 </h3>
-                <span className="text-2xl">✏️</span>
+                <span className="text-xl sm:text-2xl">✏️</span>
               </div>
               {loadingStats ? (
-                <div className="flex items-center justify-start">
+                <div className="flex items-center justify-start my-1">
                   <div className="loading-spinner-small"></div>
                 </div>
               ) : (
-                <p className="text-2xl sm:text-3xl font-bold text-purple-600">{stats.selfTasks}</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600 my-0.5">{stats.selfTasks}</p>
               )}
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                {isCEO ? 'Self-logged by all employees' : 'Self-logged activities'}
+              <p className="text-xs text-gray-600 mt-0.5 leading-tight">
+                {isCEO ? 'All self-logged' : 'Self-logged'}
               </p>
             </div>
 
             <div 
-              className="card cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-yellow-600"
+              className="card stat-card cursor-pointer hover:shadow-md active:shadow-lg transition-shadow border-l-4 border-l-yellow-600 touch-manipulation"
               onClick={() => router.push('/leaves')}
             >
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                  {isCEO ? 'All Leave Requests' : 'Leave Requests'}
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight">
+                  {isCEO ? 'Leave Requests' : 'My Leaves'}
                 </h3>
-                <span className="text-2xl">🏖️</span>
+                <span className="text-xl sm:text-2xl">🏖️</span>
               </div>
               {loadingStats ? (
-                <div className="flex items-center justify-start">
+                <div className="flex items-center justify-start my-1">
                   <div className="loading-spinner-small"></div>
                 </div>
               ) : (
-                <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{stats.leaveRequests}</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-600 my-0.5">{stats.leaveRequests}</p>
               )}
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                {isCEO ? 'All pending leave requests' : 'Pending leaves'}
+              <p className="text-xs text-gray-600 mt-0.5 leading-tight">
+                {isCEO ? 'Pending requests' : 'Pending'}
               </p>
             </div>
           </div>

@@ -35,17 +35,17 @@ export default function Navbar({ title, subtitle, currentPage }: NavbarProps) {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-        <div className="flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-4">
+        <div className="flex justify-between items-center gap-2">
           {/* Left side - Title */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 truncate">
+            <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900 truncate leading-tight">
               {title || 'Anuranan Employee Portal'}
             </h1>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">
+            <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate leading-tight">
               {subtitle || `Welcome, ${employee?.full_name}`}
               {isCEO && currentPage !== 'profile' && (
-                <span className="ml-2 badge badge-primary text-xs">CEO</span>
+                <span className="ml-1 sm:ml-2 badge badge-primary text-xs">CEO</span>
               )}
             </p>
           </div>
@@ -101,11 +101,11 @@ export default function Navbar({ title, subtitle, currentPage }: NavbarProps) {
           {/* Mobile Hamburger Button */}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="lg:hidden p-1.5 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 active:bg-gray-200 touch-manipulation"
             aria-label="Toggle menu"
           >
             <svg
-              className="h-6 w-6"
+              className="h-5 w-5 sm:h-6 sm:w-6"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"

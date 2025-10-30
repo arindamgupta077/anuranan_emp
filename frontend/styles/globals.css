@@ -14,7 +14,7 @@
 
 @layer components {
   .btn {
-    @apply px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation;
+    @apply px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation;
   }
   
   .btn-primary {
@@ -30,15 +30,15 @@
   }
   
   .input {
-    @apply w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent touch-manipulation;
+    @apply w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent touch-manipulation;
   }
   
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6;
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6;
   }
   
   .badge {
-    @apply inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium;
   }
   
   .badge-primary {
@@ -111,6 +111,7 @@
 @media (max-width: 640px) {
   body {
     font-size: 14px;
+    line-height: 1.5;
   }
   
   /* Better touch targets */
@@ -128,6 +129,48 @@
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Compact spacing */
+  h1 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  /* Reduce card padding on mobile */
+  .card {
+    padding: 0.75rem;
+  }
+  
+  /* Compact stat cards */
+  .stat-card {
+    padding: 0.75rem;
+  }
+  
+  /* Tighter spacing in forms */
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Smaller modals on mobile */
+  .modal-content {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }
 
