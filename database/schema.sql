@@ -141,14 +141,20 @@ CREATE TABLE IF NOT EXISTS leaves (
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   reason TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  approved_by UUID REFERENCES employees(id) ON DELETE SET NULL,
+  approved_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT valid_date_range CHECK (start_date <= end_date)
+  CONSTRAINT valid_date_range CHECK (start_date <= end_date),
+  CONSTRAINT valid_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED'))
 );
 
 -- Indexes for leaves
 CREATE INDEX IF NOT EXISTS idx_leaves_employee ON leaves(employee_id);
 CREATE INDEX IF NOT EXISTS idx_leaves_date_range ON leaves(start_date, end_date);
+CREATE INDEX IF NOT EXISTS idx_leaves_status ON leaves(status);
+CREATE INDEX IF NOT EXISTS idx_leaves_approved_by ON leaves(approved_by);
 
 -- ============================================================================
 -- 7. TASK HISTORY TABLE (Audit Log)
@@ -596,22 +602,48 @@ CREATE POLICY "Employees can insert own leaves"
     )
   );
 
--- Employees can update their own leaves
-CREATE POLICY "Employees can update own leaves"
+-- Employees can update their own PENDING leaves
+CREATE POLICY "Employees can update own pending leaves"
   ON leaves FOR UPDATE
   USING (
     employee_id = (
       SELECT id FROM employees WHERE auth_user_id = auth.uid()
     )
+    AND status = 'PENDING'
+  )
+  WITH CHECK (
+    employee_id = (
+      SELECT id FROM employees WHERE auth_user_id = auth.uid()
+    )
+    AND status = 'PENDING'
   );
 
--- Employees can delete their own leaves
-CREATE POLICY "Employees can delete own leaves"
+-- CEO can update any leave (for approval/rejection)
+CREATE POLICY "CEO can update any leave"
+  ON leaves FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM employees e
+      JOIN roles r ON e.role_id = r.id
+      WHERE e.auth_user_id = auth.uid() AND r.name = 'CEO'
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM employees e
+      JOIN roles r ON e.role_id = r.id
+      WHERE e.auth_user_id = auth.uid() AND r.name = 'CEO'
+    )
+  );
+
+-- Employees can delete their own PENDING leaves
+CREATE POLICY "Employees can delete own pending leaves"
   ON leaves FOR DELETE
   USING (
     employee_id = (
       SELECT id FROM employees WHERE auth_user_id = auth.uid()
     )
+    AND status = 'PENDING'
   );
 
 -- ===== TASK HISTORY TABLE POLICIES =====
