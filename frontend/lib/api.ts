@@ -2,11 +2,26 @@ import { supabase } from './supabaseClient';
 
 // Helper function to get current user and check if CEO
 async function getCurrentUser() {
-  const { data: { session } } = await supabase.auth.getSession();
+  console.log('[API] getCurrentUser called');
+  
+  const startTime = Date.now();
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  console.log('[API] Session retrieved:', {
+    duration: `${Date.now() - startTime}ms`,
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    userId: session?.user?.id,
+    error: sessionError
+  });
+  
   if (!session?.user) {
+    console.error('[API] ❌ Not authenticated - no session/user');
     throw new Error('Not authenticated');
   }
 
+  console.log('[API] Fetching employee data...');
+  const empStart = Date.now();
   const { data: employee, error } = await supabase
     .from('employees')
     .select(`
@@ -20,15 +35,32 @@ async function getCurrentUser() {
     .eq('active', true)
     .single();
 
+  console.log('[API] Employee query result:', {
+    duration: `${Date.now() - empStart}ms`,
+    hasEmployee: !!employee,
+    hasError: !!error,
+    errorDetails: error,
+    employeeId: employee?.id,
+    employeeName: employee?.full_name
+  });
+
   if (error || !employee) {
+    console.error('[API] ❌ Employee not found:', { error, employee });
     throw new Error('Employee not found');
   }
 
-  return {
+  const result = {
     user: session.user,
     employee,
     isCEO: employee.roles?.name === 'CEO'
   };
+  
+  console.log('[API] ✅ getCurrentUser success:', {
+    employeeId: employee.id,
+    isCEO: result.isCEO
+  });
+
+  return result;
 }
 
 // API methods
@@ -57,39 +89,65 @@ export const authAPI = {
 
 export const tasksAPI = {
   list: async (params?: any) => {
-    const { employee, isCEO } = await getCurrentUser();
+    console.log('[API] tasksAPI.list called with params:', params);
     
-    let query = supabase
-      .from('tasks')
-      .select(`
-        *,
-        assigned_employee:employees!tasks_assigned_to_fkey (
-          id,
-          full_name,
-          email
-        ),
-        creator:employees!tasks_created_by_fkey (
-          id,
-          full_name
-        )
-      `)
-      .order('created_at', { ascending: false });
+    try {
+      const { employee, isCEO } = await getCurrentUser();
+      
+      console.log('[API] Building tasks query for:', {
+        employeeId: employee.id,
+        isCEO,
+        params
+      });
+      
+      let query = supabase
+        .from('tasks')
+        .select(`
+          *,
+          assigned_employee:employees!tasks_assigned_to_fkey (
+            id,
+            full_name,
+            email
+          ),
+          creator:employees!tasks_created_by_fkey (
+            id,
+            full_name
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-    // Authorization: Non-CEO can only see their assigned tasks
-    if (!isCEO) {
-      query = query.eq('assigned_to', employee.id);
+      // Authorization: Non-CEO can only see their assigned tasks
+      if (!isCEO) {
+        query = query.eq('assigned_to', employee.id);
+      }
+
+      // Filter by status if provided
+      if (params?.status) {
+        const statuses = params.status.split(',');
+        query = query.in('status', statuses);
+      }
+
+      console.log('[API] Executing tasks query...');
+      const queryStart = Date.now();
+      const { data: tasks, error } = await query;
+      
+      console.log('[API] Tasks query result:', {
+        duration: `${Date.now() - queryStart}ms`,
+        taskCount: tasks?.length || 0,
+        hasError: !!error,
+        errorDetails: error
+      });
+      
+      if (error) {
+        console.error('[API] ❌ Tasks query failed:', error);
+        throw error;
+      }
+      
+      return { data: { tasks: tasks || [] } };
+    } catch (error) {
+      console.error('[API] ❌ tasksAPI.list exception:', error);
+      throw error;
     }
-
-    // Filter by status if provided
-    if (params?.status) {
-      const statuses = params.status.split(',');
-      query = query.in('status', statuses);
-    }
-
-    const { data: tasks, error } = await query;
-    
-    if (error) throw error;
-    return { data: { tasks: tasks || [] } };
   },
 
   get: async (id: number) => {

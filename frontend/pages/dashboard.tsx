@@ -39,15 +39,47 @@ export default function Dashboard() {
   }, [isAuthenticated, mounted]);
 
   const loadDashboardStats = async () => {
+    console.log('[DASHBOARD] Loading stats...', {
+      isAuthenticated,
+      hasEmployee: !!employee,
+      employeeId: employee?.id
+    });
+    
     try {
       setLoadingStats(true);
       
-      // Fetch all stats in parallel
-      const [tasksRes, selfTasksRes, leavesRes] = await Promise.all([
-        tasksAPI.list({ status: 'OPEN,IN_PROGRESS' }).catch(() => ({ data: { tasks: [] } })),
-        selfTasksAPI.list().catch(() => ({ data: { self_tasks: [] } })),
-        leavesAPI.list().catch(() => ({ data: { leaves: [] } })),
-      ]);
+      console.log('[DASHBOARD] Fetching tasks...');
+      const tasksStart = Date.now();
+      const tasksRes = await tasksAPI.list({ status: 'OPEN,IN_PROGRESS' }).catch((err) => {
+        console.error('[DASHBOARD] ❌ Tasks API failed:', err);
+        return { data: { tasks: [] } };
+      });
+      console.log('[DASHBOARD] Tasks fetched:', {
+        duration: `${Date.now() - tasksStart}ms`,
+        count: tasksRes.data.tasks?.length || 0
+      });
+
+      console.log('[DASHBOARD] Fetching self tasks...');
+      const selfStart = Date.now();
+      const selfTasksRes = await selfTasksAPI.list().catch((err) => {
+        console.error('[DASHBOARD] ❌ Self Tasks API failed:', err);
+        return { data: { self_tasks: [] } };
+      });
+      console.log('[DASHBOARD] Self tasks fetched:', {
+        duration: `${Date.now() - selfStart}ms`,
+        count: selfTasksRes.data.self_tasks?.length || 0
+      });
+
+      console.log('[DASHBOARD] Fetching leaves...');
+      const leavesStart = Date.now();
+      const leavesRes = await leavesAPI.list().catch((err) => {
+        console.error('[DASHBOARD] ❌ Leaves API failed:', err);
+        return { data: { leaves: [] } };
+      });
+      console.log('[DASHBOARD] Leaves fetched:', {
+        duration: `${Date.now() - leavesStart}ms`,
+        count: leavesRes.data.leaves?.length || 0
+      });
 
       // Count active tasks (OPEN or IN_PROGRESS)
       const activeTasks = tasksRes.data.tasks?.length || 0;
@@ -58,15 +90,22 @@ export default function Dashboard() {
       // Count pending leave requests only
       const leaveRequests = leavesRes.data.leaves?.filter((leave: any) => leave.status === 'PENDING' || !leave.status).length || 0;
 
+      console.log('[DASHBOARD] ✅ Stats loaded:', {
+        activeTasks,
+        selfTasks,
+        leaveRequests
+      });
+
       setStats({
         activeTasks,
         selfTasks,
         leaveRequests,
       });
     } catch (error) {
-      console.error('Failed to load dashboard stats:', error);
+      console.error('[DASHBOARD] ❌ Failed to load dashboard stats:', error);
     } finally {
       setLoadingStats(false);
+      console.log('[DASHBOARD] Loading complete');
     }
   };
 
